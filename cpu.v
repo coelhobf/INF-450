@@ -17,6 +17,8 @@
 
 `include "regr.v"
 `include "im.v"
+`include "branch_prediction.v"
+`include "branch_table.v"
 `include "regm.v"
 `include "control.v"
 `include "alu.v"
@@ -24,14 +26,14 @@
 `include "dm.v"
 
 `ifndef DEBUG_CPU_STAGES
-`define DEBUG_CPU_STAGES 0
+`define DEBUG_CPU_STAGES 1
 `endif
 
 module cpu(
 		input wire clk);
 
-	parameter NMEM = 20;  // number in instruction memory
-	parameter IM_DATA = "im_data.txt";
+	parameter NMEM = 17;  // number in instruction memory
+	parameter IM_DATA = "teste1.hex";
 
 	wire regwrite_s5;
 	wire [4:0] wrreg_s5;
@@ -39,26 +41,51 @@ module cpu(
 	reg stall_s1_s2;
 
 	// {{{ diagnostic outputs
+	// initial begin
+	// 	if (`DEBUG_CPU_STAGES) begin
+	// 		$display("if_pc,    if_instr, id_regrs, id_regrt, ex_alua,  ex_alub,  ex_aluctl, mem_memdata, mem_memread, mem_memwrite, wb_regdata, wb_regwrite");
+	// 		$monitor("%x, %x, %x, %x, %x, %x, %x,         %x,    %x,           %x,            %x,   %x",
+	// 				pc,				/* if_pc */
+	// 				inst,			/* if_instr */
+	// 				data1,			/* id_regrs */
+	// 				data2,			/* id_regrt */
+	// 				data1_s3,		/* data1_s3 */
+	// 				alusrc_data2,	/* alusrc_data2 */
+	// 				aluctl,			/* ex_aluctl */
+	// 				data2_s4,		/* mem_memdata */
+	// 				memread_s4,		/* mem_memread */
+	// 				memwrite_s4,	/* mem_memwrite */
+	// 				wrdata_s5,		/* wb_regdata */
+	// 				regwrite_s5		/* wb_regwrite */
+	// 			);
+	// 	end
+	// end
+	// }}}
 	initial begin
 		if (`DEBUG_CPU_STAGES) begin
 			$display("if_pc,    if_instr, id_regrs, id_regrt, ex_alua,  ex_alub,  ex_aluctl, mem_memdata, mem_memread, mem_memwrite, wb_regdata, wb_regwrite");
-			$monitor("%x, %x, %x, %x, %x, %x, %x,         %x,    %x,           %x,            %x,   %x",
+			$monitor("PC=%x %x ||rs=%d rt=%d rd=%d||A=%x B=%x||w=%x Ram=%x R%xW%x||D=%x \nb=%x j=%x||Opcode=%x Func=%x||I=%x R=%x||D=%d alu=%x branch%x j%x||R=%x",
 					pc,				/* if_pc */
 					inst,			/* if_instr */
-					data1,			/* id_regrs */
-					data2,			/* id_regrt */
-					data1_s3,		/* data1_s3 */
-					alusrc_data2,	/* alusrc_data2 */
-					aluctl,			/* ex_aluctl */
+					rs,rt,rd,	
+					fw_data1_s3,		/* A */
+					alusrc_data2,	/* B */
 					data2_s4,		/* mem_memdata */
+					rdata,
 					memread_s4,		/* mem_memread */
-					memwrite_s4,	/* mem_memwrite */
-					wrdata_s5,		/* wb_regdata */
-					regwrite_s5		/* wb_regwrite */
+					memwrite_s4,	
+					wrdata_s5,		/* wb_wrreg */
+					baddr_s4,jaddr_s4,
+					opcode, inst_s2[5:0],
+					seimm_s3,alurslt,
+					wrreg_s4,alurslt_s4,	/* mem_memwrite */
+					flush_predict,jump_s4,		
+
+					wrreg_s5//,		/* wb_regdata */
+					// clock_counter
 				);
 		end
-	end
-	// }}}
+	end 
 
 	// {{{ flush control
 	reg flush_s1, flush_s2, flush_s3;
@@ -66,7 +93,7 @@ module cpu(
 		flush_s1 <= 1'b0;
 		flush_s2 <= 1'b0;
 		flush_s3 <= 1'b0;
-		if (pcsrc | jump_s4) begin
+		if (flush_predict | jump_s4) begin
 			flush_s1 <= 1'b1;
 			flush_s2 <= 1'b1;
 			flush_s3 <= 1'b1;
@@ -84,15 +111,24 @@ module cpu(
 	wire [31:0] pc4;  // PC + 4
 	assign pc4 = pc + 4;
 
+	// mux de prediction
+	wire[1:0] mux_signal;
+	wire[31:0] b_dest_out;
+
 	always @(posedge clk) begin
 		if (stall_s1_s2) 
 			pc <= pc;
-		else if (pcsrc == 1'b1)
-			pc <= baddr_s4;
 		else if (jump_s4 == 1'b1)
 			pc <= jaddr_s4;
-		else
+		else if (mux_signal == 2'd0)
 			pc <= pc4;
+		else if (mux_signal == 2'd1)
+			pc <= b_dest_out;
+		else if (mux_signal == 2'd2)
+			pc <= pc4_s2;
+		else if (mux_signal == 2'd3)
+			pc <= baddr_s4;
+			
 	end
 
 	// pass PC + 4 to stage 2
@@ -164,6 +200,11 @@ module cpu(
 	wire [31:0] pc4_s3;
 	regr #(.N(32)) reg_pc4_s2(.clk(clk), .clear(1'b0), .hold(stall_s1_s2),
 						.in(pc4_s2), .out(pc4_s3));
+	
+	wire [31:0] pc4_s4;
+	regr #(.N(32)) reg_pc4_s4(.clk(clk),
+                        .hold(1'b0), .clear(1'b0), 
+						.in(pc4_s3), .out(pc4_s4));
 
 	// control (opcode -> ...)
 	wire		regdst;
@@ -339,12 +380,12 @@ module cpu(
 				.out(wrreg_s5));
 
 	// branch
-	reg pcsrc;
+	reg result_alu;
 	always @(*) begin
 		case (1'b1)
-			branch_eq_s4: pcsrc <= zero_s4;
-			branch_ne_s4: pcsrc <= ~(zero_s4);
-			default: pcsrc <= 1'b0;
+			branch_eq_s4: result_alu <= zero_s4;
+			branch_ne_s4: result_alu <= ~(zero_s4);
+			default: result_alu <= 1'b0;
 		endcase
 	end
 	// }}}
@@ -408,6 +449,95 @@ module cpu(
 			stall_s1_s2 <= 1'b0;  // no stall
 	end
 	// }}}
+
+	// comunicação maquina e tabela
+	wire p_fetch;
+	wire hit_fetch;
+	wire write_rp;
+	wire write_rt;
+
+	// barreiras que levam o p e hit do stage 1 pro stage 4=
+
+	// predict
+	wire p_alu_s2;
+	wire p_alu_s3;
+	wire p_alu_s4;
+
+	regr #(.N(1)) regr_p_alu_s1_s2(.clk(clk),
+						.hold(stall_s1_s2), .clear(flush_s1),
+						.in(p_fetch), .out(p_alu_s2));
+	
+	regr #(.N(1)) regr_p_alu_s2_s3(.clk(clk),
+						.hold(1'b0), .clear(flush_s2),
+						.in(p_alu_s2), .out(p_alu_s3));
+
+	regr #(.N(1)) regr_p_alu_s3_s4(.clk(clk),
+						.hold(1'b0), .clear(flush_s3),
+						.in(p_alu_s3), .out(p_alu_s4));
+
+	// hit
+	wire hit_alu_s2;
+	wire hit_alu_s3;
+	wire hit_alu_s4;
+
+	regr #(.N(1)) regr_hit_alu_s1_s2(.clk(clk),
+						.hold(stall_s1_s2), .clear(flush_s1),
+						.in(hit_fetch), .out(hit_alu_s2));
+	
+	regr #(.N(1)) regr_hit_alu_s2_s3(.clk(clk),
+						.hold(1'b0), .clear(flush_s2),
+						.in(hit_alu_s2), .out(hit_alu_s3));
+
+	regr #(.N(1)) regr_hit_alu_s3_s4(.clk(clk),
+						.hold(1'b0), .clear(flush_s3),
+						.in(hit_alu_s3), .out(hit_alu_s4));
+
+
+	// Chamada da branch prediction
+
+	
+
+	// sinal de branch decode
+	wire b_decode;
+	assign b_decode = branch_eq_s2 | branch_ne_s2;
+	
+	
+	wire[31:0] instruction_update;
+
+	wire flush_predict;
+	branch_prediction bp(
+		// input
+		.clk(clk),
+		.hit_fetch(hit_fetch),
+		.p_fetch(p_fetch),
+		.hit_alu(hit_alu_s4),
+		.p_alu(p_alu_s4),
+		.result_alu(result_alu),
+		.b_decode(b_decode),
+
+		// output
+		.mux_signal(mux_signal),
+		.write_rp(write_rp),
+		.write_rt(write_rt),
+		.flush(flush_predict)	
+	);
+
+	branch_table bt(
+		.clk(clk),
+		
+		// fetch
+		.instruction_fetch(pc4), //input // instruction adress
+		.b_dest_out(b_dest_out),
+		.p_fetch(p_fetch),
+		.hit_fetch(hit_fetch),
+
+		// update all input
+		.write_rp(write_rp),
+		.write_rt(write_rt),
+		.b_dest_in(baddr_s4),
+		.result_alu(result_alu),
+		.instruction_update(pc4_s4) // instruction adress
+	);
 
 endmodule
 
