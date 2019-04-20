@@ -26,14 +26,14 @@
 `include "dm.v"
 
 `ifndef DEBUG_CPU_STAGES
-`define DEBUG_CPU_STAGES 1
+`define DEBUG_CPU_STAGES 2'd1
 `endif
 
 module cpu(
 		input wire clk);
 
-	parameter NMEM = 20;  // number in instruction memory
-	parameter IM_DATA = "teste2.hex";
+	parameter NMEM = 15;  // number in instruction memory
+	parameter IM_DATA = "teste3.hex";
 
 	wire regwrite_s5;
 	wire [4:0] wrreg_s5;
@@ -62,8 +62,7 @@ module cpu(
 	// end
 	// }}}
 	initial begin
-		// if (`DEBUG_CPU_STAGES) begin
-		if (1'b0) begin
+		if (`DEBUG_CPU_STAGES == 2'd1) begin
 			$display("if_pc,    if_instr, id_regrs, id_regrt, ex_alua,  ex_alub,  ex_aluctl, mem_memdata, mem_memread, mem_memwrite, wb_regdata, wb_regwrite");
 			$monitor("PC=%x %x ||rs=%d rt=%d rd=%d||A=%x B=%x||w=%x Ram=%x R%xW%x||D=%x \nb=%x j=%x||Opcode=%x Func=%x||I=%x R=%x||D=%d alu=%x  flush%x j%x||R=%x",
 					pc,				/* if_pc */
@@ -85,6 +84,7 @@ module cpu(
 					wrreg_s5//,		/* wb_regdata */
 					// clock_counter
 				);
+			// $monitor("Acerto de desvio: %d	Erro de Desvio: %d", p_acerto, p_erro);
 		end
 	end 
 
@@ -514,6 +514,12 @@ module cpu(
 	
 	wire[31:0] inst_adress_s4;
 
+	//teste de predição
+	wire[31:0] p_acerto;
+	wire[31:0] p_erro;
+	
+
+	// maquina de predição
 	wire flush_predict;
 	branch_prediction bp(
 		// input
@@ -529,7 +535,12 @@ module cpu(
 		.mux_signal(mux_signal),
 		.write_rp(write_rp),
 		.write_rt(write_rt),
-		.flush(flush_predict)	
+		.flush(flush_predict),
+
+		//teste
+		.p_acerto(p_acerto),
+		.p_erro(p_erro)
+
 	);
 
 	branch_table bt(
@@ -553,8 +564,7 @@ module cpu(
 // monitor da maquina de estado
 
 	initial begin
-		if (`DEBUG_CPU_STAGES) begin
-		// if (1'b0) begin
+		if (`DEBUG_CPU_STAGES == 2'd2) begin
 			$display("branch machine");
 			$monitor("hit_s1=%x p_s1=%x || hit_s2=%x p_s2=%x b_s2=%x || hit_s3=%x p_s3=%x b_s3=%x || hit_s4=%x p_s4=%x b_s4=%x d_s4= %x || s: mux=%x wp=%x wt=%x flush=%x ",
 			// $monitor("hit_s1=%x p_s1=%x || s2 || s3 || hit_s4=%x p_s4=%x b_s4=%x d_s4= %x",
