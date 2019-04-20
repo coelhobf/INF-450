@@ -5,12 +5,12 @@
 
 module branch_prediction(
 	input wire clk,
-	input wire hit_fetch,
-	input wire p_fetch,
-	input wire hit_alu,
-	input wire p_alu,
-	input wire result_alu,
-	input wire b_decode,
+	input wire hit_s1,
+	input wire p_s1,
+	input wire hit_s4,
+	input wire p_s4,
+	input wire deviated_s4,
+	input wire branch_s4,
 	
 	output reg [1:0] mux_signal,
 	output wire reg write_rp,
@@ -19,55 +19,55 @@ module branch_prediction(
 	);
 
 	always @(*) begin
-		if(~hit_fetch & ~hit_alu & ~b_decode) begin
+		if(~hit_s1 & ~hit_s4 & ~branch_s4) begin
 			mux_signal <= 2'd0;
 			write_rp <= 1'd0;
 			write_rt <= 1'd0;
 			flush <= 1'd0;
 		end else
-		if(hit_fetch & ~p_fetch & ~hit_alu & ~b_decode) begin
+		if(hit_s1 & ~p_s1 & ~hit_s4 & ~branch_s4) begin
 			mux_signal <= 2'd0;
 			write_rp <= 1'd0;
 			write_rt <= 1'd0;
 			flush <= 1'd0;
 		end else
-		if(hit_fetch & p_fetch & ~hit_alu & ~b_decode) begin
+		if(hit_s1 & p_s1 & ~hit_s4 & ~branch_s4) begin
 			mux_signal <= 2'd1;
 			write_rp <= 1'd0;
 			write_rt <= 1'd0;
 			flush <= 1'd0;
 		end else
-		if(~hit_fetch & ~hit_alu & ~result_alu & b_decode) begin
+		if(~hit_s1 & ~hit_s4 & ~deviated_s4 & branch_s4) begin
 			mux_signal <= 2'd0;
 			write_rp <= 1'd1;
 			write_rt <= 1'd1;
 			flush <= 1'd0;
 		end else
-		if(~hit_fetch & ~hit_alu & result_alu & b_decode) begin
+		if(~hit_s1 & ~hit_s4 & deviated_s4 & branch_s4) begin
 			mux_signal <= 2'd3;
 			write_rp <= 1'd1;
 			write_rt <= 1'd1;
 			flush <= 1'd1;
 		end else
-		if(~hit_fetch & hit_alu & ~p_alu & ~result_alu & b_decode) begin
+		if(~hit_s1 & hit_s4 & ~p_s4 & ~deviated_s4 & branch_s4) begin
 			mux_signal <= 2'd0;
 			write_rp <= 1'd0;
 			write_rt <= 1'd0;
 			flush <= 1'd0;
 		end else
-		if(~hit_fetch & hit_alu & p_alu & result_alu & b_decode) begin
+		if(~hit_s1 & hit_s4 & p_s4 & deviated_s4 & branch_s4) begin
 			mux_signal <= 2'd0;
 			write_rp <= 1'd0;
 			write_rt <= 1'd0;
 			flush <= 1'd0;
 		end else
-		if(~hit_fetch & hit_alu & ~p_alu & result_alu & b_decode) begin
+		if(~hit_s1 & hit_s4 & ~p_s4 & deviated_s4 & branch_s4) begin
 			mux_signal <= 2'd3;
 			write_rp <= 1'd1;
 			write_rt <= 1'd0;
 			flush <= 1'd1;
 		end else
-		if(~hit_fetch & hit_alu & p_alu & ~result_alu & b_decode) begin
+		if(~hit_s1 & hit_s4 & p_s4 & ~deviated_s4 & branch_s4) begin
 			mux_signal <= 2'd2;
 			write_rp <= 1'd1;
 			write_rt <= 1'd0;

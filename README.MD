@@ -1,7 +1,6 @@
+# INF 450
 
-#INF 450
-
-##Trabalho I - Preditor de desvio
+## Trabalho I - Preditor de desvio
 =================================
 
 - Bruno Ferreira Coelho - 92559

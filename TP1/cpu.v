@@ -32,8 +32,8 @@
 module cpu(
 		input wire clk);
 
-	parameter NMEM = 17;  // number in instruction memory
-	parameter IM_DATA = "teste1.hex";
+	parameter NMEM = 20;  // number in instruction memory
+	parameter IM_DATA = "teste2.hex";
 
 	wire regwrite_s5;
 	wire [4:0] wrreg_s5;
@@ -62,9 +62,10 @@ module cpu(
 	// end
 	// }}}
 	initial begin
-		if (`DEBUG_CPU_STAGES) begin
+		// if (`DEBUG_CPU_STAGES) begin
+		if (1'b0) begin
 			$display("if_pc,    if_instr, id_regrs, id_regrt, ex_alua,  ex_alub,  ex_aluctl, mem_memdata, mem_memread, mem_memwrite, wb_regdata, wb_regwrite");
-			$monitor("PC=%x %x ||rs=%d rt=%d rd=%d||A=%x B=%x||w=%x Ram=%x R%xW%x||D=%x \nb=%x j=%x||Opcode=%x Func=%x||I=%x R=%x||D=%d alu=%x branch%x j%x||R=%x",
+			$monitor("PC=%x %x ||rs=%d rt=%d rd=%d||A=%x B=%x||w=%x Ram=%x R%xW%x||D=%x \nb=%x j=%x||Opcode=%x Func=%x||I=%x R=%x||D=%d alu=%x  flush%x j%x||R=%x",
 					pc,				/* if_pc */
 					inst,			/* if_instr */
 					rs,rt,rd,	
@@ -125,7 +126,7 @@ module cpu(
 		else if (mux_signal == 2'd1)
 			pc <= b_dest_out;
 		else if (mux_signal == 2'd2)
-			pc <= pc4_s2;
+			pc <= pc4_s4;
 		else if (mux_signal == 2'd3)
 			pc <= baddr_s4;
 			
@@ -380,12 +381,12 @@ module cpu(
 				.out(wrreg_s5));
 
 	// branch
-	reg result_alu;
+	reg deviated_s4;
 	always @(*) begin
 		case (1'b1)
-			branch_eq_s4: result_alu <= zero_s4;
-			branch_ne_s4: result_alu <= ~(zero_s4);
-			default: result_alu <= 1'b0;
+			branch_eq_s4: deviated_s4 <= zero_s4;
+			branch_ne_s4: deviated_s4 <= ~(zero_s4);
+			default: deviated_s4 <= 1'b0;
 		endcase
 	end
 	// }}}
@@ -451,69 +452,78 @@ module cpu(
 	// }}}
 
 	// comunicação maquina e tabela
-	wire p_fetch;
-	wire hit_fetch;
+	wire p_s1;
+	wire hit_s1;
 	wire write_rp;
 	wire write_rt;
 
 	// barreiras que levam o p e hit do stage 1 pro stage 4=
 
 	// predict
-	wire p_alu_s2;
-	wire p_alu_s3;
-	wire p_alu_s4;
+	wire p_s2;
+	wire p_s3;
+	wire p_s4;
 
-	regr #(.N(1)) regr_p_alu_s1_s2(.clk(clk),
+	regr #(.N(1)) regr_p_s1_s2(.clk(clk),
 						.hold(stall_s1_s2), .clear(flush_s1),
-						.in(p_fetch), .out(p_alu_s2));
+						.in(p_s1), .out(p_s2));
 	
-	regr #(.N(1)) regr_p_alu_s2_s3(.clk(clk),
+	regr #(.N(1)) regr_p_s2_s3(.clk(clk),
 						.hold(1'b0), .clear(flush_s2),
-						.in(p_alu_s2), .out(p_alu_s3));
+						.in(p_s2), .out(p_s3));
 
-	regr #(.N(1)) regr_p_alu_s3_s4(.clk(clk),
+	regr #(.N(1)) regr_p_s3_s4(.clk(clk),
 						.hold(1'b0), .clear(flush_s3),
-						.in(p_alu_s3), .out(p_alu_s4));
+						.in(p_s3), .out(p_s4));
 
 	// hit
-	wire hit_alu_s2;
-	wire hit_alu_s3;
-	wire hit_alu_s4;
+	wire hit_s2;
+	wire hit_s3;
+	wire hit_s4;
 
-	regr #(.N(1)) regr_hit_alu_s1_s2(.clk(clk),
+	regr #(.N(1)) regr_hit_s1_s2(.clk(clk),
 						.hold(stall_s1_s2), .clear(flush_s1),
-						.in(hit_fetch), .out(hit_alu_s2));
+						.in(hit_s1), .out(hit_s2));
 	
-	regr #(.N(1)) regr_hit_alu_s2_s3(.clk(clk),
+	regr #(.N(1)) regr_hit_s2_s3(.clk(clk),
 						.hold(1'b0), .clear(flush_s2),
-						.in(hit_alu_s2), .out(hit_alu_s3));
+						.in(hit_s2), .out(hit_s3));
 
-	regr #(.N(1)) regr_hit_alu_s3_s4(.clk(clk),
+	regr #(.N(1)) regr_hit_s3_s4(.clk(clk),
 						.hold(1'b0), .clear(flush_s3),
-						.in(hit_alu_s3), .out(hit_alu_s4));
+						.in(hit_s3), .out(hit_s4));
+
+	// sinal de branch decode
+	wire branch_s2;
+	assign branch_s2 = branch_eq_s2 | branch_ne_s2;
+
+	// branch
+	wire branch_s3;
+	wire branch_s4;
+
+	regr #(.N(1)) regr_branch_s2_s3(.clk(clk),
+						.hold(1'b0), .clear(flush_s2),
+						.in(branch_s2), .out(branch_s3));
+
+	regr #(.N(1)) regr_branch_s3_s4(.clk(clk),
+						.hold(1'b0), .clear(flush_s3),
+						.in(branch_s3), .out(branch_s4));
 
 
 	// Chamada da branch prediction
-
 	
-
-	// sinal de branch decode
-	wire b_decode;
-	assign b_decode = branch_eq_s2 | branch_ne_s2;
-	
-	
-	wire[31:0] instruction_update;
+	wire[31:0] inst_adress_s4;
 
 	wire flush_predict;
 	branch_prediction bp(
 		// input
 		.clk(clk),
-		.hit_fetch(hit_fetch),
-		.p_fetch(p_fetch),
-		.hit_alu(hit_alu_s4),
-		.p_alu(p_alu_s4),
-		.result_alu(result_alu),
-		.b_decode(b_decode),
+		.hit_s1(hit_s1),
+		.p_s1(p_s1),
+		.hit_s4(hit_s4),
+		.p_s4(p_s4),
+		.deviated_s4(deviated_s4),
+		.branch_s4(branch_s4),
 
 		// output
 		.mux_signal(mux_signal),
@@ -526,18 +536,47 @@ module cpu(
 		.clk(clk),
 		
 		// fetch
-		.instruction_fetch(pc4), //input // instruction adress
+		.inst_adress_s1(pc4), //input // instruction adress
 		.b_dest_out(b_dest_out),
-		.p_fetch(p_fetch),
-		.hit_fetch(hit_fetch),
+		.p_s1(p_s1),
+		.hit_s1(hit_s1),
 
 		// update all input
 		.write_rp(write_rp),
 		.write_rt(write_rt),
 		.b_dest_in(baddr_s4),
-		.result_alu(result_alu),
-		.instruction_update(pc4_s4) // instruction adress
+		.deviated_s4(deviated_s4),
+		.inst_adress_s4(pc4_s4) // instruction adress
 	);
+
+
+// monitor da maquina de estado
+
+	initial begin
+		if (`DEBUG_CPU_STAGES) begin
+		// if (1'b0) begin
+			$display("branch machine");
+			$monitor("hit_s1=%x p_s1=%x || hit_s2=%x p_s2=%x b_s2=%x || hit_s3=%x p_s3=%x b_s3=%x || hit_s4=%x p_s4=%x b_s4=%x d_s4= %x || s: mux=%x wp=%x wt=%x flush=%x ",
+			// $monitor("hit_s1=%x p_s1=%x || s2 || s3 || hit_s4=%x p_s4=%x b_s4=%x d_s4= %x",
+					hit_s1,
+					p_s1,
+					hit_s2,
+					p_s2,
+					branch_s2,
+					hit_s3,
+					p_s3,
+					branch_s3,
+					hit_s4,
+					p_s4,
+					branch_s4,
+					deviated_s4,
+					mux_signal,
+					write_rp,
+					write_rt,
+					flush_predict
+				);
+		end
+	end 
 
 endmodule
 

@@ -1,0 +1,33 @@
+WARNING: ./im.v:36: $readmemh(teste2.hex): Not enough words in the file for the requested range [0:19].
+branch machine
+VCD info: dumpfile test.vcd opened for output.
+hit_s1=0 p_s1=0 || hit_s2=x p_s2=x b_s2=x || hit_s3=x p_s3=x b_s3=x || hit_s4=x p_s4=x b_s4=x d_s4= x || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=x p_s3=x b_s3=x || hit_s4=x p_s4=x b_s4=x d_s4= x || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=x p_s4=x b_s4=x d_s4= x || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=1 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=1 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=1 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=1 d_s4= 1 || s: mux=3 wp=1 wt=1 flush=1 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=1 p_s1=1 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=1 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=1 p_s2=1 b_s2=1 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=1 p_s3=1 b_s3=1 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=1 p_s4=1 b_s4=1 d_s4= 0 || s: mux=2 wp=1 wt=0 flush=1 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=1 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=1 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=1 d_s4= 1 || s: mux=3 wp=1 wt=1 flush=1 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=1 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=1 p_s2=0 b_s2=1 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=1 p_s1=1 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=1 p_s3=0 b_s3=1 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=1 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=1 p_s2=1 b_s2=1 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=1 p_s4=0 b_s4=1 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=1 p_s3=1 b_s3=1 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=1 p_s4=1 b_s4=1 d_s4= 1 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=1 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=1 p_s2=0 b_s2=1 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=1 p_s1=1 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=1 p_s3=0 b_s3=1 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=1 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=1 p_s2=1 b_s2=1 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=1 p_s4=0 b_s4=1 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=1 p_s3=1 b_s3=1 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=1 p_s4=1 b_s4=1 d_s4= 0 || s: mux=2 wp=1 wt=0 flush=1 
+hit_s1=0 p_s1=0 || hit_s2=0 p_s2=0 b_s2=0 || hit_s3=0 p_s3=0 b_s3=0 || hit_s4=0 p_s4=0 b_s4=0 d_s4= 0 || s: mux=0 wp=0 wt=0 flush=0 
