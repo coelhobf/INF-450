@@ -32,8 +32,8 @@
 module cpu(
 		input wire clk);
 
-	parameter NMEM = 15;  // number in instruction memory
-	parameter IM_DATA = "teste3.hex";
+	parameter NMEM = 19;  // number in instruction memory
+	parameter IM_DATA = "teste2.hex";
 
 	wire regwrite_s5;
 	wire [4:0] wrreg_s5;
